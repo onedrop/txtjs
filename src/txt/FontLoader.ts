@@ -61,12 +61,23 @@ module txt {
             window.setTimeout ( function(){ loader._target.fontLoaded(); } , 1 );
         }
 
+        static hasLocalStorage():boolean {
+          var item:string = "check";
+          try {
+            localStorage.setItem(item, item);
+            localStorage.removeItem(item);
+            return true;
+          } catch (e) {
+            return false;
+          }
+        }
+
         static loadFont( fontName:string , loader:any ){
             var fonts = txt.FontLoader.fonts;
-            
+
             //determine if font exists in memory
             if( txt.FontLoader.fonts.hasOwnProperty( fontName ) ){
-                
+
                 //loading complete
                 if( txt.FontLoader.fonts[ fontName ].loaded === true ){
                     txt.FontLoader.check( loader._id );
@@ -85,7 +96,7 @@ module txt {
                 //TODO localstorage check & get
                 var req:any = new XMLHttpRequest();
 
-                if( localStorage && txt.FontLoader.cache ){
+                if( txt.FontLoader.hasLocalStorage() && txt.FontLoader.cache ){
                     var local = JSON.parse( localStorage.getItem( 'txt_font_' + fontName.split(' ').join('_') ) );
                     if( local != null ){
                         if( local.version === txt.FontLoader.version ){
@@ -96,9 +107,9 @@ module txt {
                 }
 
                 req.onload = function(){
-                    
+
                     //localstorage set
-                    if( localStorage && txt.FontLoader.cache && this.cacheFont == undefined ){
+                    if( txt.FontLoader.hasLocalStorage() && txt.FontLoader.cache && this.cacheFont == undefined ){
                         localStorage.setItem( 'txt_font_' + fontName.split(' ').join('_') , JSON.stringify( { font:this.responseText, version:txt.FontLoader.version } ) );
                     }
 
@@ -126,15 +137,15 @@ module txt {
 
                             case '1':
                                 //glyphs
-                                
+
                                 glyph = new txt.Glyph();
                                 glyph.offset = parseInt( line[ 2 ] ) / font.units;
-                                glyph.path = line[ 3 ]; 
+                                glyph.path = line[ 3 ];
                                 font.glyphs[ line[ 1 ] ] = glyph;
                                 break;
 
                             case '2':
-                                //kerning                            
+                                //kerning
                                 if( font.kerning[ line[ 1 ] ] == undefined ){
                                     font.kerning[ line[ 1 ] ] = {};
                                 }
